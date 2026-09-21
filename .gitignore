@@ -1,0 +1,36 @@
+# Secretos y credenciales (nunca versionar)
+.env
+.env.*
+!.env.example
+
+# Estado en runtime: sesión de X (accounts.db, con cookies/credenciales) y base de borradores
+*.db
+*.db-wal
+*.db-shm
+*.db-journal
+datos/
+
+# Respaldos manuales y artefactos de refactor (el historial vive en git)
+backups_refactor/
+*.bak
+*.bak-*
+
+# Backups y scripts históricos del workflow de n8n (reemplazado por bot_telegram.py; incluyen ids de chat y credenciales de n8n)
+n8n-backup/
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Herramientas locales de Claude Code / editores / SO
+.claude/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log

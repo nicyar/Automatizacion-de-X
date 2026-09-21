@@ -1,0 +1,17 @@
+# El Dockerfile solo copia los .py que corren; esto evita mandar al daemon el resto del contexto
+.env
+.env.*
+!.env.example
+.git/
+.venv/
+__pycache__/
+*.db
+*.db-wal
+*.db-shm
+datos/
+backups_refactor/
+n8n-backup/
+tools/
+docs/
+.claude/
+*.md

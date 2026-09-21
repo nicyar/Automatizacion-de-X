@@ -1,0 +1,29 @@
+services:
+  bot-tweets:
+    build: .
+    env_file: .env
+    environment:
+      - ESTADO_DB_PATH=/app/datos/estado.db
+    ports:
+      - "127.0.0.1:5000:5000"
+    volumes:
+      - ./accounts.db:/app/accounts.db
+      # Bind mount de directorio (no de archivo): SQLite en modo WAL necesita los archivos
+      # -wal y -shm al lado de estado.db para coordinar entre bot-tweets y telegram-poller.
+      # Con un bind de archivo, cada contenedor los crea en su propia capa de escritura y no
+      # se comparte nada entre procesos.
+      - ./datos:/app/datos
+    restart: unless-stopped
+
+  telegram-poller:
+    build: .
+    env_file: .env
+    environment:
+      - ESTADO_DB_PATH=/app/datos/estado.db
+    command: ["python", "bot_telegram.py"]
+    volumes:
+      # Mismo directorio que bot-tweets (ver comentario arriba): el poller de este paso
+      # todavía no lo usa, pero queda listo para el paso 3 (conversación de
+      # reescritura/publicación) sin tener que tocar el compose ahí.
+      - ./datos:/app/datos
+    restart: unless-stopped
