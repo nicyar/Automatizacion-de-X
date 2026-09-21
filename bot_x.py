@@ -18,7 +18,13 @@ class ClienteX:
     sola instancia por proceso (ver `cliente_x` más abajo), creada al importar el módulo.
     """
 
-    CUENTAS = ['CriptoNorber', 'CriptoNoticias', 'CriptoTendencia', 'CryptocapoOO']
+    # Cuentas vigiladas: se configuran con CUENTAS_X (handles separados por coma, sin @). El default
+    # es la lista original del proyecto, para que un .env viejo siga funcionando sin cambios.
+    CUENTAS = [
+        c.strip().lstrip('@')
+        for c in os.environ.get('CUENTAS_X', 'CriptoNorber,CriptoNoticias,CriptoTendencia,CryptocapoOO').split(',')
+        if c.strip()
+    ]
 
     # Páginas de UserTweets (~20 tweets cada una) que se recorren como máximo buscando since_id.
     # Con chequeos cada 3 min alcanza la primera; las demás solo se piden para ponerse al día
@@ -95,7 +101,10 @@ class ClienteX:
         self.email = os.environ['EMAIL']
         self.password = os.environ['PASSWORD']
         self.cookies = os.environ['COOKIES']
-        self.api = API()  # usa accounts.db por defecto
+        # La sesión de twscrape vive en un archivo SQLite. Se configura por variable de entorno
+        # para poder ponerlo dentro de datos/ (un directorio que Docker monta siempre): un bind
+        # mount de un archivo suelto que no existe en un clon nuevo lo crea Docker como directorio.
+        self.api = API(os.environ.get('ACCOUNTS_DB_PATH', 'accounts.db'))
 
     async def setup(self):
         await self.api.pool.add_account(

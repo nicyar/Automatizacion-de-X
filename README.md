@@ -114,18 +114,36 @@ Del lado de X aplica el mismo criterio: se guarda el último tweet visto por cue
 Requisitos: **Docker Desktop** abierto y corriendo, una cuenta de X, un bot de Telegram (token de [@BotFather](https://t.me/BotFather)) y una API key de [Google AI Studio](https://aistudio.google.com/).
 
 ```bash
-# 1. Configuración: copiar la plantilla y completar los valores
+# 1. Clonar el repositorio
+git clone https://github.com/nicyar/Automatizacion-de-X.git
+cd Automatizacion-de-X
+
+# 2. Configuración: copiar la plantilla y completar los valores (ver la tabla de abajo)
 cp .env.example .env
 
-# 2. Levantar los dos servicios en segundo plano
-docker compose up -d
+# 3. Construir y levantar los dos servicios en segundo plano
+docker compose up -d --build
 
-# 3. Ver que estén corriendo y seguir los logs
+# 4. Ver que estén corriendo y seguir los logs
 docker ps
 docker compose logs -f
 ```
 
-Para probar sin publicar tweets reales, agregar `MODO_PUBLICACION=mock` al `.env` y reconstruir con `docker compose up -d --build`. La guía completa de operación (apagar, respaldos, archivos delicados) está en [`docs/ARQUITECTURA.md`](docs/ARQUITECTURA.md#4-cómo-correrlo).
+### Configuración (`.env`)
+
+| Variable | Qué es | Cómo conseguirla |
+|---|---|---|
+| `USERNAME`, `EMAIL`, `PASSWORD` | Cuenta de X con la que se lee y se publica | Los datos de la cuenta |
+| `COOKIES` | Sesión de esa cuenta, con el formato `auth_token=...; ct0=...` | Con la sesión iniciada en el navegador: herramientas de desarrollador → Application → Cookies → `x.com` |
+| `CUENTAS_X` | Cuentas a vigilar, separadas por coma y sin `@` (ej. `cuentaUno,cuentaDos`) | Las que quieras seguir. Si se omite, usa una lista de ejemplo |
+| `TELEGRAM_BOT_TOKEN` | Token del bot | Crear un bot con [@BotFather](https://t.me/BotFather) |
+| `CHAT_ID` | Chat de Telegram al que responde el bot | Escribirle al bot y consultar tu id con [@userinfobot](https://t.me/userinfobot) |
+| `GEMINI_API_KEY` | Clave de la API de Gemini | [Google AI Studio](https://aistudio.google.com/) (tiene nivel gratuito) |
+| `MODO_PUBLICACION` | Opcional. `mock` simula la publicación | — |
+
+El estado (borradores y sesión de X) se guarda en `datos/`, que se crea solo la primera vez.
+
+Para probar sin publicar tweets reales, agregar `MODO_PUBLICACION=mock` al `.env` y reconstruir con `docker compose up -d --build`. Sin `GEMINI_API_KEY` el bot funciona igual, con propuestas de prueba en lugar de IA. La guía completa de operación (apagar, respaldos, archivos delicados) está en [`docs/ARQUITECTURA.md`](docs/ARQUITECTURA.md#4-cómo-correrlo).
 
 ### Estructura del repositorio
 
@@ -135,6 +153,7 @@ Para probar sin publicar tweets reales, agregar `MODO_PUBLICACION=mock` al `.env
 ├── estado_db.py        # Acceso a la base SQLite compartida
 ├── tools/              # Scripts de QA contra el chat real
 ├── docs/ARQUITECTURA.md
+├── LICENSE             # MIT
 ├── Dockerfile
 ├── docker-compose.yml
 ├── requirements.txt
@@ -146,3 +165,9 @@ Para probar sin publicar tweets reales, agregar `MODO_PUBLICACION=mock` al `.env
 ## Aviso
 
 El sistema no usa la API oficial de X: lee y publica con la sesión de una cuenta ya logueada, mediante la librería `twscrape` y un endpoint interno no documentado. Eso significa que X puede cambiarlo sin avisar (el sistema está preparado para detectarlo y frenar en vez de publicar mal) y que su uso debe ser acorde a los términos de X. Pensado para uso personal sobre cuentas propias.
+
+---
+
+## Licencia
+
+[MIT](LICENSE) © 2026 nicyar
