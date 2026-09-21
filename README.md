@@ -143,6 +143,33 @@ docker compose logs -f
 
 El estado (borradores y sesión de X) se guarda en `datos/`, que se crea solo la primera vez.
 
+### Cómo agregar (o quitar) cuentas a vigilar
+
+Las cuentas se definen en un solo lugar: la variable `CUENTAS_X` del `.env`. No hay que tocar código.
+
+1. **Editar `.env`** con los *handles* de las cuentas, separados por coma, sin `@` y sin espacios de más:
+   ```
+   CUENTAS_X=cuentaUno,cuentaDos,cuentaTres
+   ```
+   El handle es el nombre de usuario que aparece en la URL: `x.com/cuentaUno` → `cuentaUno`.
+2. **Recrear el servicio que lee esa lista** (un simple `restart` no vuelve a leer el `.env`):
+   ```bash
+   docker compose up -d --force-recreate bot-tweets
+   ```
+3. **Confirmar en los logs** que aparecen las cuentas nuevas:
+   ```bash
+   docker compose logs -f bot-tweets
+   ```
+   Cada chequeo imprime una línea por cuenta, por ejemplo `cuentaUno: 0 tweets nuevos desde 1234...`.
+
+Para **quitar** una cuenta, se saca de la lista y se repite el paso 2.
+
+Qué esperar:
+
+- **Una cuenta recién agregada no dispara un aviso con su último tweet.** El primer chequeo lo toma como punto de partida y guarda cuál es el más reciente; recién los tweets *posteriores* llegan a Telegram.
+- **Si una cuenta falla** (handle mal escrito, cuenta suspendida o privada), el error queda en los logs y las demás cuentas siguen funcionando con normalidad.
+- **Cada cuenta suma pedidos a X en cada chequeo** (cada 3 minutos), con una pausa de 2 segundos entre cuentas, y el chequeo completo tiene un tope de 45 segundos. Por eso conviene mantener la lista acotada, del orden de unas 10 a 15 cuentas como máximo (estimación, no un límite probado).
+
 Para probar sin publicar tweets reales, agregar `MODO_PUBLICACION=mock` al `.env` y reconstruir con `docker compose up -d --build`. Sin `GEMINI_API_KEY` el bot funciona igual, con propuestas de prueba en lugar de IA. La guía completa de operación (apagar, respaldos, archivos delicados) está en [`docs/ARQUITECTURA.md`](docs/ARQUITECTURA.md#4-cómo-correrlo).
 
 ### Estructura del repositorio
